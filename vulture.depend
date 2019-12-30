@@ -1,0 +1,191 @@
+# depslib dependency file v1.0
+1577473229 source:/home/karigane/Projets/c/vulture/main.cpp
+	<iostream>
+	<vector>
+	<unistd.h>
+	<algorithm>
+	"Bitfinex.h"
+	"Util.h"
+	"ta_libc.h"
+	"Indicator.h"
+
+1577730044 /home/karigane/Projets/c/vulture/include/Bitfinex.h
+	<string>
+	<map>
+	<Util.h>
+
+1577730145 /home/karigane/Projets/c/vulture/include/Util.h
+	<rapidjson/document.h>
+	<string>
+	<vector>
+
+1575337865 /home/karigane/Projets/c/vulture/include/rapidjson/document.h
+	"reader.h"
+	"internal/meta.h"
+	"internal/strfunc.h"
+	"memorystream.h"
+	"encodedstream.h"
+	<new>
+	<limits>
+	<iterator>
+	<utility>
+
+1575337865 /home/karigane/Projets/c/vulture/include/rapidjson/reader.h
+	"allocators.h"
+	"stream.h"
+	"encodedstream.h"
+	"internal/clzll.h"
+	"internal/meta.h"
+	"internal/stack.h"
+	"internal/strtod.h"
+	<limits>
+	<intrin.h>
+	<nmmintrin.h>
+	<emmintrin.h>
+	<arm_neon.h>
+	<stdexcept>
+	"rapidjson/error/error.h"
+	"rapidjson/reader.h"
+	"error/error.h"
+
+1575337865 /home/karigane/Projets/c/vulture/include/rapidjson/allocators.h
+	"rapidjson.h"
+
+1575337865 /home/karigane/Projets/c/vulture/include/rapidjson/rapidjson.h
+	<cstdlib>
+	<cstring>
+	"rapidjson/..."
+	<string>
+	"msinttypes/stdint.h"
+	"msinttypes/inttypes.h"
+	<stdint.h>
+	<inttypes.h>
+	<endian.h>
+	"rapidjson/..."
+	<cassert>
+	<cassert>
+
+1575337865 /home/karigane/Projets/c/vulture/include/rapidjson/msinttypes/stdint.h
+	<stdint.h>
+	<limits.h>
+	<wchar.h>
+
+1575337865 /home/karigane/Projets/c/vulture/include/rapidjson/msinttypes/inttypes.h
+	"stdint.h"
+	<inttypes.h>
+
+1575337865 /home/karigane/Projets/c/vulture/include/rapidjson/stream.h
+	"rapidjson.h"
+	"encodings.h"
+
+1575337865 /home/karigane/Projets/c/vulture/include/rapidjson/encodings.h
+	"rapidjson.h"
+
+1575337865 /home/karigane/Projets/c/vulture/include/rapidjson/encodedstream.h
+	"stream.h"
+	"memorystream.h"
+
+1575337865 /home/karigane/Projets/c/vulture/include/rapidjson/memorystream.h
+	"stream.h"
+
+1575337865 /home/karigane/Projets/c/vulture/include/rapidjson/internal/clzll.h
+	"../rapidjson.h"
+	<intrin.h>
+
+1575337865 /home/karigane/Projets/c/vulture/include/rapidjson/internal/meta.h
+	"../rapidjson.h"
+	<type_traits>
+
+1575337865 /home/karigane/Projets/c/vulture/include/rapidjson/internal/stack.h
+	"../allocators.h"
+	"swap.h"
+	<cstddef>
+
+1575337865 /home/karigane/Projets/c/vulture/include/rapidjson/internal/swap.h
+	"../rapidjson.h"
+
+1575337865 /home/karigane/Projets/c/vulture/include/rapidjson/internal/strtod.h
+	"ieee754.h"
+	"biginteger.h"
+	"diyfp.h"
+	"pow10.h"
+	<climits>
+	<limits>
+
+1575337865 /home/karigane/Projets/c/vulture/include/rapidjson/internal/ieee754.h
+	"../rapidjson.h"
+
+1575337865 /home/karigane/Projets/c/vulture/include/rapidjson/internal/biginteger.h
+	"../rapidjson.h"
+	<intrin.h>
+
+1575337865 /home/karigane/Projets/c/vulture/include/rapidjson/internal/diyfp.h
+	"../rapidjson.h"
+	"clzll.h"
+	<limits>
+	<intrin.h>
+
+1575337865 /home/karigane/Projets/c/vulture/include/rapidjson/internal/pow10.h
+	"../rapidjson.h"
+
+1575337865 /home/karigane/Projets/c/vulture/include/rapidjson/error/error.h
+	"../rapidjson.h"
+
+1575337865 /home/karigane/Projets/c/vulture/include/rapidjson/internal/strfunc.h
+	"../stream.h"
+	<cwchar>
+
+1576740833 /usr/local/include/ta-lib/ta_libc.h
+	"ta_common.h"
+	"ta_func.h"
+	"ta_abstract.h"
+
+1576740833 /usr/local/include/ta-lib/ta_common.h
+	<stdio.h>
+	<limits.h>
+	<float.h>
+	"ta_defs.h"
+
+1576740833 /usr/local/include/ta-lib/ta_defs.h
+	<limits.h>
+
+1576740833 /usr/local/include/ta-lib/ta_func.h
+	"ta_common.h"
+	"ta_defs.h"
+
+1576740833 /usr/local/include/ta-lib/ta_abstract.h
+	"ta_common.h"
+
+1577473260 /home/karigane/Projets/c/vulture/include/Indicator.h
+	"ta_libc.h"
+
+1577728995 source:/home/karigane/Projets/c/vulture/src/Bitfinex.cpp
+	<cryptopp/base64.h>
+	<cryptopp/hex.h>
+	<cryptopp/hmac.h>
+	<cryptopp/osrng.h>
+	<cryptopp/files.h>
+	<iostream>
+	<curl/curl.h>
+	<chrono>
+	<ctime>
+	<sstream>
+	<string>
+	<map>
+	"Bitfinex.h"
+	"Util.h"
+
+1577473209 source:/home/karigane/Projets/c/vulture/src/Indicator.cpp
+	<iostream>
+	<vector>
+	<ta_libc.h>
+	"Indicator.h"
+	"Bitfinex.h"
+
+1577729392 source:/home/karigane/Projets/c/vulture/src/Util.cpp
+	<iostream>
+	<fstream>
+	<rapidjson/document.h>
+	<string>
+	"Util.h"
+
