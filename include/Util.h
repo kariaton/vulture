@@ -11,8 +11,12 @@ class Util
         Util();
         virtual ~Util();
         void getBTXParam(const char*, std::string &, std::string &) const;
-        void macd(std::string &, std::vector<double> &) const;
+        void formatCandles(std::string &, std::vector<std::vector<double>> &) const;
         void getConfigFile(std::string &) const;
+
+   private:
+        void _clearOCHL(std::vector<std::vector<double>> &) const;
+        void _reverseOCHL(std::vector<std::vector<double>> &) const;
 };
 
 #endif // UTIL_H

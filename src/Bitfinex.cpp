@@ -44,16 +44,16 @@ void Bitfinex::_init()
 
 }
 
-void Bitfinex::candles(vector<double> &candles) const
+void Bitfinex::candles(vector<vector<double>> &candles) const
 {
     string endpoint = "candles";
-    string sNbCandles = std::to_string(Bitfinex::CANDLES );
+    string sNbCandles = std::to_string(Bitfinex::CANDLES_NUMBER_ELEMENT );
     string param = "trade:15m:tBTCUSD/hist?limit=" + sNbCandles;
     string response = "";
 
     get(endpoint, param, response);
 
-    _util.macd(response, candles);
+    _util.formatCandles(response, candles);
 }
 
 void Bitfinex::wallets(string &response) const
@@ -181,7 +181,7 @@ void Bitfinex::getBase64(string &body, string &payload) const
 {
     byte buffer[1024] = {};
 
-    for (auto i = 0; i < body.length(); ++i) {
+    for (size_t i = 0; i < body.length(); ++i) {
         buffer[i] = body[i];
     }
 

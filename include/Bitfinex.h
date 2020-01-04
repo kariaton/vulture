@@ -7,8 +7,6 @@
 
 class Bitfinex
 {
-  static constexpr auto CURL_TIMEOUT = 30L;
-  static constexpr auto CURL_DEBUG_VERBOSE = 0L;
 
   static size_t writeCallback(void *, size_t, size_t, void *) noexcept;
 
@@ -16,7 +14,11 @@ class Bitfinex
     Bitfinex();
     virtual ~Bitfinex();
 
-    static constexpr int CANDLES = 10000;
+    static constexpr int CANDLES_NUMBER_ELEMENT = 10000; // Nombre de chandelles retournées par l'api
+    static constexpr auto CURL_TIMEOUT = 30L;
+    static constexpr auto CURL_DEBUG_VERBOSE = 0L;
+
+    enum candleOCHL {MTS, OPEN, CLOSE, HIGH, LOW, VOLUME}; // Enumération pour OCHL (Millisecond, Open, Close, High, Low, Volume)
 
     std::string getName() const {return _name;}
 
@@ -26,7 +28,7 @@ class Bitfinex
     void getBase64(std::string &, std::string &) const;
 
     void wallets(std::string &) const;
-    void candles(std::vector<double> &) const;
+    void candles(std::vector<std::vector<double>> &) const;
 
     int get(std::string const &, std::string const &, std::string &) const;
     int post(std::string const &, std::string const &, std::string &) const;
