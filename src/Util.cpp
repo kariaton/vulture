@@ -2,8 +2,10 @@
 #include <fstream>
 #include <rapidjson/document.h>
 #include <string>
+#include <algorithm> // reverse
 
 #include "Util.h"
+#include "Bitfinex.h"
 
 using namespace rapidjson;
 using namespace std;
@@ -32,10 +34,10 @@ void Util::getBTXParam(const char* config, string &apiKey, string &apiKeySecret)
     apiKeySecret = document["btx-api-key-secret"].GetString();
 }
 
-void Util::macd(string &stringData, vector<double> &candles) const
+void Util::formatCandles(string &stringData, vector<vector<double>> &candles) const
 {
     const char *json = stringData.c_str();
-    candles.clear();
+    _clearOCHL(candles);
 
     Document document;
     document.Parse(json);
@@ -44,10 +46,13 @@ void Util::macd(string &stringData, vector<double> &candles) const
 
     for(SizeType i = 0; i < dataList.Size(); ++i) {
         const Value &data = dataList[i];
-        candles.push_back(data[2].GetDouble());
+        candles[Bitfinex::candleOCHL::OPEN].push_back(data[Bitfinex::candleOCHL::OPEN].GetDouble());
+        candles[Bitfinex::candleOCHL::CLOSE].push_back(data[Bitfinex::candleOCHL::CLOSE].GetDouble());
+        candles[Bitfinex::candleOCHL::HIGH].push_back(data[Bitfinex::candleOCHL::HIGH].GetDouble());
+        candles[Bitfinex::candleOCHL::LOW].push_back(data[Bitfinex::candleOCHL::LOW].GetDouble());
     }
 
-    candles.erase(candles.begin());
+    _reverseOCHL(candles);
 }
 
 void Util::getConfigFile(string &config) const
@@ -61,5 +66,19 @@ void Util::getConfigFile(string &config) const
 
     while(getline(file, line)) {
         config += line;
+    }
+}
+
+void Util::_clearOCHL(vector<vector<double>> &candles) const
+{
+    for(auto &candleOCHL : candles) {
+        candleOCHL.clear();
+    }
+}
+
+void Util::_reverseOCHL(vector<vector<double>> &candles) const
+{
+    for(auto &candleOCHL : candles) {
+        reverse(candleOCHL.begin(), candleOCHL.end());
     }
 }
