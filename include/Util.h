@@ -10,9 +10,14 @@ class Util
     public:
         Util();
         virtual ~Util();
-        void getBTXParam(const char*, std::string &, std::string &) const;
-        void formatCandles(std::string &, std::vector<std::vector<double>> &) const;
+
+        // CONFIG
         void getConfigFile(std::string &) const;
+        void getBTXParam(const char *, std::string &, std::string &) const;
+        void getDbParam(const char *, std::string &, std::string &, std::string &, std::string &) const;
+
+        // CANDLES
+        void formatCandles(std::string &, std::vector<std::vector<double>> &) const;
 
    private:
         void _clearOCHL(std::vector<std::vector<double>> &) const;
