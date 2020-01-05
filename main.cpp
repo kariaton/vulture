@@ -6,6 +6,7 @@
 #include "Util.h"
 #include "ta_libc.h"
 #include "Indicator.h"
+#include "Mysql.h"
 
 using namespace std;
 
@@ -16,7 +17,6 @@ int main()
 
     // Generate datas
     vector <vector<double>> candles = {{0}, {0}, {0}, {0}, {0}, {0}};
-
     int macdSize = Bitfinex::CANDLES_NUMBER_ELEMENT - TA_MACD_Lookback(12, 26, 9);
     int stochrsiSize = Bitfinex::CANDLES_NUMBER_ELEMENT - TA_STOCHRSI_Lookback(14,14,14, TA_MAType_SMA);
     double *outMacd = new double[macdSize];
@@ -26,6 +26,9 @@ int main()
     double *outFastD = new double[stochrsiSize];
     int outBegIdx= 0;
     int outNbElement = 0;
+
+    // Bdd
+    Mysql *mysql = new Mysql();
 
     for(;;) {
         try {
@@ -68,6 +71,8 @@ int main()
     bitfinex = nullptr;
     delete indicator;
     indicator = nullptr;
+    delete mysql;
+    mysql = nullptr;
 
     return 0;
 }

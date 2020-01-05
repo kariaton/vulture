@@ -25,13 +25,24 @@ Util::~Util()
 * document["hello"].getString() = "world"
 * https://rapidjson.org/md_doc_tutorial.html#ValueDocument
 */
-void Util::getBTXParam(const char* config, string &apiKey, string &apiKeySecret) const
+void Util::getBTXParam(const char *config, string &apiKey, string &apiKeySecret) const
 {
     Document document;
     document.Parse(config);
 
     apiKey = document["btx-api-key"].GetString();
     apiKeySecret = document["btx-api-key-secret"].GetString();
+}
+
+void Util::getDbParam(const char *config, string &dbHost, string &dbName, string &dbUser, string &dbPassword) const
+{
+    Document document;
+    document.Parse(config);
+
+    dbHost = document["db-host"].GetString();
+    dbName = document["db-name"].GetString();
+    dbUser = document["db-user"].GetString();
+    dbPassword = document["db-password"].GetString();
 }
 
 void Util::formatCandles(string &stringData, vector<vector<double>> &candles) const
