@@ -18,7 +18,6 @@
 using namespace std;
 using namespace CryptoPP;
 
-
 Bitfinex::Bitfinex()
 {
     _init();
@@ -44,16 +43,32 @@ void Bitfinex::_init()
 
 }
 
-void Bitfinex::candles(vector<vector<double>> &candles) const
+void Bitfinex::candles(vector<vector<double>> &candles, const bool &last) const
 {
     string endpoint = "candles";
     string sNbCandles = std::to_string(Bitfinex::CANDLES_NUMBER_ELEMENT );
-    string param = "trade:15m:tBTCUSD/hist?limit=" + sNbCandles;
     string response = "";
+    string param;
+
+    if (last) {
+         param = "trade:15m:tBTCUSD/last?limit=" + sNbCandles;
+    } else {
+        param = "trade:15m:tBTCUSD/hist?limit=" + sNbCandles;
+
+    }
 
     get(endpoint, param, response);
-
     _util.formatCandles(response, candles);
+}
+
+int Bitfinex::order(string const &price, string const &amount) const
+{
+    string endpoint = "w/order/submit";
+    string body = "{\"type\":\"EXCHANGE LIMIT\",\"symbol\":\"tBTCUSD\",\"price\":\""+price+"\",\"amount\":\""+amount+"\"}";
+    string response = "";
+    post(endpoint, body, response);
+
+    cout << response << endl;
 }
 
 void Bitfinex::wallets(string &response) const
@@ -103,6 +118,8 @@ int Bitfinex::post(string  const &endpoint, string const &body, string &response
     getNonce(nonce);
     getSignature(nonce, body, endpoint, signature);
     getSig(signature, sig);
+
+    cout << body << endl;
 
     struct curl_slist *curlHeader = nullptr;
     curlHeader = curl_slist_append(curlHeader, ("bfx-nonce:" + nonce).c_str());

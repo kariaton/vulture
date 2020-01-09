@@ -14,6 +14,8 @@ class Bitfinex
     Bitfinex();
     virtual ~Bitfinex();
 
+    static constexpr int ASK_LAST_CANDLES = 1;
+    static constexpr int ASK_ALL_CANDLES = 0;
     static constexpr int CANDLES_NUMBER_ELEMENT = 10000; // Nombre de chandelles retournées par l'api
     static constexpr auto CURL_TIMEOUT = 30L;
     static constexpr auto CURL_DEBUG_VERBOSE = 0L;
@@ -27,8 +29,9 @@ class Bitfinex
     void getSig(std::string &, std::string &) const;
     void getBase64(std::string &, std::string &) const;
 
+    int order(std::string const &, std::string const &) const;
     void wallets(std::string &) const;
-    void candles(std::vector<std::vector<double>> &) const;
+    void candles(std::vector<std::vector<double>> &, const bool &) const;
 
     int get(std::string const &, std::string const &, std::string &) const;
     int post(std::string const &, std::string const &, std::string &) const;

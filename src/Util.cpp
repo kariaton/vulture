@@ -3,6 +3,7 @@
 #include <rapidjson/document.h>
 #include <string>
 #include <algorithm> // reverse
+#include <type_traits>
 
 #include "Util.h"
 #include "Bitfinex.h"
@@ -47,6 +48,7 @@ void Util::getDbParam(const char *config, string &dbHost, string &dbName, string
 
 void Util::formatCandles(string &stringData, vector<vector<double>> &candles) const
 {
+    //cout << stringData << endl;
     const char *json = stringData.c_str();
     _clearOCHL(candles);
 
@@ -55,15 +57,23 @@ void Util::formatCandles(string &stringData, vector<vector<double>> &candles) co
 
     const Value &dataList = document;
 
-    for(SizeType i = 0; i < dataList.Size(); ++i) {
-        const Value &data = dataList[i];
-        candles[Bitfinex::candleOCHL::OPEN].push_back(data[Bitfinex::candleOCHL::OPEN].GetDouble());
-        candles[Bitfinex::candleOCHL::CLOSE].push_back(data[Bitfinex::candleOCHL::CLOSE].GetDouble());
-        candles[Bitfinex::candleOCHL::HIGH].push_back(data[Bitfinex::candleOCHL::HIGH].GetDouble());
-        candles[Bitfinex::candleOCHL::LOW].push_back(data[Bitfinex::candleOCHL::LOW].GetDouble());
-    }
+    // if we ask all candles.
+    if (dataList[0].IsArray()) {
+        for(SizeType i = 0; i < dataList.Size(); ++i) {
+            const Value &data = dataList[i];
+            candles[Bitfinex::candleOCHL::OPEN].push_back(data[Bitfinex::candleOCHL::OPEN].GetDouble());
+            candles[Bitfinex::candleOCHL::CLOSE].push_back(data[Bitfinex::candleOCHL::CLOSE].GetDouble());
+            candles[Bitfinex::candleOCHL::HIGH].push_back(data[Bitfinex::candleOCHL::HIGH].GetDouble());
+            candles[Bitfinex::candleOCHL::LOW].push_back(data[Bitfinex::candleOCHL::LOW].GetDouble());
+        }
 
-    _reverseOCHL(candles);
+        _reverseOCHL(candles);
+    } else { // Juste last candle
+        candles[Bitfinex::candleOCHL::OPEN].push_back(dataList[Bitfinex::candleOCHL::OPEN].GetDouble());
+        candles[Bitfinex::candleOCHL::CLOSE].push_back(dataList[Bitfinex::candleOCHL::CLOSE].GetDouble());
+        candles[Bitfinex::candleOCHL::HIGH].push_back(dataList[Bitfinex::candleOCHL::HIGH].GetDouble());
+        candles[Bitfinex::candleOCHL::LOW].push_back(dataList[Bitfinex::candleOCHL::LOW].GetDouble());
+    }
 }
 
 void Util::getConfigFile(string &config) const

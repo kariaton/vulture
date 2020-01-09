@@ -17,7 +17,6 @@ int main()
 
     // Generate datas
     vector <vector<double>> candles = {{0}, {0}, {0}, {0}, {0}, {0}};
-    int macdSize = Bitfinex::CANDLES_NUMBER_ELEMENT - TA_MACD_Lookback(12, 26, 9);
     int stochrsiSize = Bitfinex::CANDLES_NUMBER_ELEMENT - TA_STOCHRSI_Lookback(14,14,14, TA_MAType_SMA);
     double *outMacd = new double[macdSize];
     double *outMacdSignal = new double[macdSize];
@@ -32,22 +31,21 @@ int main()
 
     for(;;) {
         try {
-            bitfinex->candles(candles);
-
-            /**MACD**/
-            indicator->macd(candles[Bitfinex::candleOCHL::CLOSE], outBegIdx, outNbElement, outMacd, outMacdSignal, outMacdHist);
-            cout <<"MACD hist : " << outMacdHist[outNbElement-2] << " macd : " << outMacd[outNbElement-2] << " signal : " << outMacdSignal[outNbElement-2] << endl;
+            bitfinex->candles(candles, Bitfinex::ASK_ALL_CANDLES);
 
             /**StochRSI**/
-            indicator->stochRsi(candles[Bitfinex::candleOCHL::CLOSE], outBegIdx, outNbElement, outFastK, outFastD);
-            cout << "StochRSI outFastK : " << outFastK[outNbElement-2] << " outFasD : " << outFastD[outNbElement-2] << endl;
+            indicator->stochRsi(candles[Bitfinex::candleOCHL::CLOSE]);
+            //cout << "StochRSI outFastK : " << outFastK[outNbElement-2] << " outFasD : " << outFastD[outNbElement-2] << endl;
 
             /**StochF**/
             indicator->stochF(
                 candles[Bitfinex::candleOCHL::HIGH], candles[Bitfinex::candleOCHL::LOW], candles[Bitfinex::candleOCHL::CLOSE],
                 outBegIdx, outNbElement, outFastK, outFastD
             );
-            cout << "StochF outFastK : " << outFastK[outNbElement-2] << " outFasD : " << outFastD[outNbElement-2] << endl;
+            //cout << "StochF outFastK : " << outFastK[outNbElement-2] << " outFasD : " << outFastD[outNbElement-2] << endl;
+
+            bitfinex->candles(candles,Bitfinex::ASK_LAST_CANDLES);
+            cout << "Last : " << candles[Bitfinex::candleOCHL::CLOSE][0] << endl;
 
         } catch (string const &e) {
             cerr << e << endl;
