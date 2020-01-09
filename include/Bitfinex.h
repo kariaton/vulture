@@ -37,12 +37,11 @@ class Bitfinex
     int post(std::string const &, std::string const &, std::string &) const;
 
   private:
-    std::string _name = "Bitfinex";
+    std::string const _name = "Bitfinex";
     std::string _apiKey;
     std::string _apiKeySecret;
-    std::string _privateUrl = "https://api.bitfinex.com";
-    std::string _publicUrl = "https://api-pub.bitfinex.com/v2";
-    std::string _entrypoint = "v2/auth";
+    std::string const _privateUrl = "https://api.bitfinex.com";
+    std::string const _entrypoint = "v2/auth";
     Util _util;
 
     void _init();

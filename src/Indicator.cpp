@@ -28,20 +28,7 @@ Indicator::~Indicator()
     _outFastD = nullptr;
 }
 
-void Indicator::macd(vector<double> const &close) const
-{
-    double const *aClose = &close[0];
-
-    TA_MACD(
-        0, Bitfinex::CANDLES_NUMBER_ELEMENT-1,
-        aClose,
-        12, 26, 9,
-        &outBegIdx, &outNbElement,
-        outMacd, outMacdSignal, outMacdHist
-    );
-}
-
-void Indicator::stochRsi(vector<double> const &close) const
+void Indicator::stochRsi(vector<double> const &close)
 {
     double const *aClose = &close[0];
     int outNbElement = 0;
@@ -56,19 +43,27 @@ void Indicator::stochRsi(vector<double> const &close) const
     );
 
     cout << "StochRSI outFastK : " << _outFastK[outNbElement-2] << " outFasD : " << _outFastD[outNbElement-2] << endl;
+    _stochRsiIsUp = _outFastK > _outFastD;
 }
 
-void Indicator::stochF(vector<double> const &inHigh, vector<double> const &inLow, vector<double> const &inClose, int &outBegIdx, int &outNBElement, double *outFastK, double *outFastD) const
+void Indicator::stochF(vector<vector <double>> const &candles)
 {
-    double const *aInHigh = &inHigh[0];
-    double const *aInLow = &inLow[0];
-    double const *aInClose = &inClose[0];
+    double const *aInHigh = &candles[Bitfinex::candleOCHL::HIGH][0];
+    double const *aInLow = &candles[Bitfinex::candleOCHL::LOW][0];
+    double const *aInClose = &candles[Bitfinex::candleOCHL::CLOSE][0];
+    int outNbElement = 0;
+    int outBegIdx = 0;
 
     TA_STOCHF(
         0, Bitfinex::CANDLES_NUMBER_ELEMENT-1,
         aInHigh, aInLow, aInClose, // double[]
         14, 3, TA_MAType_SMA,
-        &outBegIdx, &outNBElement,
-        outFastK, outFastD // double[]
+        &outBegIdx, &outNbElement,
+        _outFastK, _outFastD // double[]
     );
+
+    cout << "StochF outFastK : " << _outFastK[outNbElement-2] << " outFasD : " << _outFastD[outNbElement-2] << endl;
+
+    _stochFIsUp = _outFastK > _outFastD;
 }
+

@@ -80,7 +80,7 @@ void Bitfinex::wallets(string &response) const
 
 int Bitfinex::get(string const &enpoint, string const &param, string &response) const
 {
-    string url = _publicUrl + "/" + enpoint + "/" + param;
+    string url = "https://api-pub.bitfinex.com/v2/" + enpoint + "/" + param;
 
     CURL *curl;
     CURLcode resCode;
@@ -118,8 +118,6 @@ int Bitfinex::post(string  const &endpoint, string const &body, string &response
     getNonce(nonce);
     getSignature(nonce, body, endpoint, signature);
     getSig(signature, sig);
-
-    cout << body << endl;
 
     struct curl_slist *curlHeader = nullptr;
     curlHeader = curl_slist_append(curlHeader, ("bfx-nonce:" + nonce).c_str());
