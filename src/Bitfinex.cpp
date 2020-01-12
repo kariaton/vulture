@@ -46,7 +46,7 @@ void Bitfinex::_init()
 void Bitfinex::candles(vector<vector<double>> &candles, const bool &last) const
 {
     string endpoint = "candles";
-    string sNbCandles = std::to_string(Bitfinex::CANDLES_NUMBER_ELEMENT );
+    string sNbCandles = to_string(Bitfinex::CANDLES_NUMBER_ELEMENT );
     string response = "";
     string param;
 
@@ -61,20 +61,50 @@ void Bitfinex::candles(vector<vector<double>> &candles, const bool &last) const
     _util.formatCandles(response, candles);
 }
 
-int Bitfinex::order(string const &price, string const &amount) const
+/**
+* Envoie un order d'achat ou de vente
+*/
+void Bitfinex::submit(string const &price, string const &amount, Order &order) const
 {
     string endpoint = "w/order/submit";
     string body = "{\"type\":\"EXCHANGE LIMIT\",\"symbol\":\"tBTCUSD\",\"price\":\""+price+"\",\"amount\":\""+amount+"\"}";
     string response = "";
     post(endpoint, body, response);
 
-    cout << response << endl;
+    _util.formatReturnOrder(response, order);
+}
+
+/**
+* Update un order
+*/
+void Bitfinex::update(Order &order) const
+{
+    string endpoint = "w/order/update";
+    string body = "{\"id\":"+order.getBtxId()+",\"price\":\""+to_string(order.getPrice())+"\",\"amount\":\""+to_string(order.getAmount())+"\"}";
+    string response = "";
+    post(endpoint, body, response);
+
+    _util.formatReturnOrder(response, order);
+}
+
+/**
+* Cancel un order
+*/
+void Bitfinex::cancel(Order &order) const
+{
+    string endpoint = "w/order/cancel";
+    string body = "{\"id\":"+order.getBtxId()+"}";
+    string response = "";
+    post(endpoint, body, response);
+
+    _util.formatReturnOrder(response, order);
 }
 
 void Bitfinex::wallets(string &response) const
 {
     string endpoint = "r/wallets";
     string body = "{}";
+
     post(endpoint, body, response);
 }
 

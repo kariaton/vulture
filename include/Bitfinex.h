@@ -4,10 +4,10 @@
 #include <string>
 #include <map>
 #include <Util.h>
+#include <Order.h>
 
 class Bitfinex
 {
-
   static size_t writeCallback(void *, size_t, size_t, void *) noexcept;
 
   public:
@@ -29,7 +29,10 @@ class Bitfinex
     void getSig(std::string &, std::string &) const;
     void getBase64(std::string &, std::string &) const;
 
-    int order(std::string const &, std::string const &) const;
+    void submit(std::string const &, std::string const &, Order &) const;
+    void update(Order &) const;
+    void cancel(Order &) const;
+
     void wallets(std::string &) const;
     void candles(std::vector<std::vector<double>> &, const bool &) const;
 
@@ -42,6 +45,7 @@ class Bitfinex
     std::string _apiKeySecret;
     std::string const _privateUrl = "https://api.bitfinex.com";
     std::string const _entrypoint = "v2/auth";
+
     Util _util;
 
     void _init();

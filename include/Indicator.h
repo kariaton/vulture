@@ -3,7 +3,6 @@
 
 #include "ta_libc.h"
 
-
 class Indicator
 {
     public:
