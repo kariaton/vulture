@@ -3,21 +3,24 @@
 
 #include "ta_libc.h"
 
-
 class Indicator
 {
     public:
         Indicator();
         virtual ~Indicator();
 
-        void macd(std::vector<double> const &, int &, int &, double *, double *, double *) const;
-        void stochRsi(std::vector<double> const &, int &, int &, double *, double *) const;
-        void stochF(std::vector<double> const &, std::vector<double> const &, std::vector<double> const &, int &, int &, double *, double *) const;
-
-    protected:
+        void stochRsi(std::vector<double>  &);
+        void stochF(std::vector<std::vector <double>> const &);
+        void stochRsiIsUp() const;
+        bool stochRsiIsUp() {return _stochRsiIsUp;}
+        bool stochFIsUp() {return _stochFIsUp;}
 
     private:
         TA_RetCode _res;
+        double *_outFastK;
+        double *_outFastD;
+        bool _stochRsiIsUp;
+        bool _stochFIsUp;
 };
 
 #endif // INDICATOR_H

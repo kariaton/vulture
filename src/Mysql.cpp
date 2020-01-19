@@ -5,6 +5,7 @@
 
 #include "Mysql.h"
 #include "Util.h"
+#include "Order.h"
 
 using namespace std;
 using namespace sql;
@@ -37,7 +38,6 @@ void Mysql::_init()
     _stmt = _con->createStatement();
 }
 
-
 void Mysql::test() const
 {
     ResultSet* res;
@@ -53,4 +53,23 @@ void Mysql::test() const
     }
 
     delete res;
+}
+
+void Mysql::newOrder(Order &order) const
+{
+    string btxId = order.getBtxId();
+    string amount = to_string(order.getAmount());
+    string price = to_string(order.getPrice());
+    string status = order.getStatus();
+    string date = order.getDate();
+    string btxPrice = to_string(order.getBtxPrice());
+
+    try {
+        string req = "INSERT INTO orders (btx_id, amount, price, btx_price, type, status, date) VALUES ('"+btxId+"', "+amount+", "+price+", "+btxPrice+", 'created', '"+status+"', '"+date+"')";
+        _stmt->executeUpdate(req);
+    } catch (SQLException &e) {
+        cerr << "# ERR: " << e.what();
+        cerr << " (code erreur MySQL: " << e.getErrorCode();
+        cerr << ", EtatSQL: " << e.getSQLState() << " )" << endl;
+    }
 }

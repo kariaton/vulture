@@ -7,6 +7,7 @@
 #include <cppconn/statement.h>
 
 #include "Util.h"
+#include "Order.h"
 
 class Mysql
 {
@@ -15,6 +16,7 @@ class Mysql
         virtual ~Mysql();
 
         void test() const;
+        void newOrder(Order &order) const;
 
     private:
         Util _util = Util();

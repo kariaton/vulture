@@ -18,7 +18,6 @@
 using namespace std;
 using namespace CryptoPP;
 
-
 Bitfinex::Bitfinex()
 {
     _init();
@@ -42,30 +41,90 @@ void Bitfinex::_init()
     _apiKey = apiKey;
     _apiKeySecret = apiKeySecret;
 
+    _privateUrl = "https://api.bitfinex.com";
+    _publicUrl = "https://api-pub.bitfinex.com/";
+    _entrypoint = "auth";
+    _version = "v2";
+
 }
 
-void Bitfinex::candles(vector<vector<double>> &candles) const
+void Bitfinex::candles(vector<vector<double>> &candles, const bool &last) const
 {
     string endpoint = "candles";
-    string sNbCandles = std::to_string(Bitfinex::CANDLES_NUMBER_ELEMENT );
-    string param = "trade:15m:tBTCUSD/hist?limit=" + sNbCandles;
+    string sNbCandles = to_string(Bitfinex::CANDLES_NUMBER_ELEMENT );
     string response = "";
+    string param;
+
+    if (last) {
+         param = "trade:15m:tBTCUSD/last?limit=" + sNbCandles;
+    } else {
+        param = "trade:15m:tBTCUSD/hist?limit=" + sNbCandles;
+    }
 
     get(endpoint, param, response);
-
     _util.formatCandles(response, candles);
+}
+
+/**
+* Envoie un order d'achat ou de vente
+*/
+void Bitfinex::submit(Order &order) const
+{
+    string endpoint = "w/order/submit";
+    string body = "{\"type\":\"EXCHANGE LIMIT\",\"symbol\":\"tBTCUSD\",\"price\":\""+to_string(order.getPrice())+"\",\"amount\":\""+to_string(order.getAmount())+"\"}";
+    string response = "";
+    post(endpoint, body, response);
+    cout << response << endl;
+    _util.formatReturnOrder(response, order);
+}
+
+/**
+* Update un order
+*/
+void Bitfinex::update(Order &order) const
+{
+    string endpoint = "w/order/update";
+    string body = "{\"id\":"+order.getBtxId()+",\"price\":\""+to_string(order.getPrice())+"\",\"amount\":\""+to_string(order.getAmount())+"\"}";
+    string response = "";
+    post(endpoint, body, response);
+
+    _util.formatReturnOrder(response, order);
+}
+
+/**
+* Cancel un order
+*/
+void Bitfinex::cancel(Order &order) const
+{
+    string endpoint = "w/order/cancel";
+    string body = "{\"id\":"+order.getBtxId()+"}";
+    string response = "";
+    post(endpoint, body, response);
+
+    _util.formatReturnOrder(response, order);
+}
+
+void Bitfinex::order(Order &order) const
+{
+    string endpoint = "r/orders";
+    string body = "{\"id\":["+order.getBtxId()+"]}";
+    string response = "";
+    post(endpoint, body, response);
+
+    _util.formatReturnOrder(response, order);
 }
 
 void Bitfinex::wallets(string &response) const
 {
     string endpoint = "r/wallets";
     string body = "{}";
+
     post(endpoint, body, response);
 }
 
 int Bitfinex::get(string const &enpoint, string const &param, string &response) const
 {
-    string url = _publicUrl + "/" + enpoint + "/" + param;
+    string url = _publicUrl + "/" + _version + "/" +  enpoint + "/" + param;
 
     CURL *curl;
     CURLcode resCode;
@@ -98,7 +157,9 @@ int Bitfinex::get(string const &enpoint, string const &param, string &response) 
 int Bitfinex::post(string  const &endpoint, string const &body, string &response) const
 {
     string nonce = "", signature = "", sig = "";
-    string url = _privateUrl + "/" + _entrypoint + "/" + endpoint;
+    string url = _privateUrl + "/"+ _version + "/" + _entrypoint + "/" + endpoint;
+
+    cout << url << endl;
 
     getNonce(nonce);
     getSignature(nonce, body, endpoint, signature);
@@ -142,7 +203,7 @@ int Bitfinex::post(string  const &endpoint, string const &body, string &response
 
 void Bitfinex::getSignature(string const &nonce, string const &body, string const &endpoint, string &signature) const
 {
-    signature = "/api/"+_entrypoint+"/"+endpoint+nonce+body;
+    signature = "/api/" + _version + "/" + _entrypoint + "/" + endpoint+nonce+body;
 }
 
 void Bitfinex::getSig(string &signature, string &sig) const

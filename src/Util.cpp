@@ -3,9 +3,12 @@
 #include <rapidjson/document.h>
 #include <string>
 #include <algorithm> // reverse
+#include <type_traits>
+#include <ctime>
 
 #include "Util.h"
 #include "Bitfinex.h"
+#include "Order.h"
 
 using namespace rapidjson;
 using namespace std;
@@ -55,15 +58,49 @@ void Util::formatCandles(string &stringData, vector<vector<double>> &candles) co
 
     const Value &dataList = document;
 
-    for(SizeType i = 0; i < dataList.Size(); ++i) {
-        const Value &data = dataList[i];
-        candles[Bitfinex::candleOCHL::OPEN].push_back(data[Bitfinex::candleOCHL::OPEN].GetDouble());
-        candles[Bitfinex::candleOCHL::CLOSE].push_back(data[Bitfinex::candleOCHL::CLOSE].GetDouble());
-        candles[Bitfinex::candleOCHL::HIGH].push_back(data[Bitfinex::candleOCHL::HIGH].GetDouble());
-        candles[Bitfinex::candleOCHL::LOW].push_back(data[Bitfinex::candleOCHL::LOW].GetDouble());
-    }
+    // if we ask all candles.
+    if (dataList[0].IsArray()) {
+        for(SizeType i = 0; i < dataList.Size(); ++i) {
+            const Value &data = dataList[i];
+            candles[Bitfinex::candleOCHL::OPEN].push_back(data[Bitfinex::candleOCHL::OPEN].GetDouble());
+            candles[Bitfinex::candleOCHL::CLOSE].push_back(data[Bitfinex::candleOCHL::CLOSE].GetDouble());
+            candles[Bitfinex::candleOCHL::HIGH].push_back(data[Bitfinex::candleOCHL::HIGH].GetDouble());
+            candles[Bitfinex::candleOCHL::LOW].push_back(data[Bitfinex::candleOCHL::LOW].GetDouble());
+        }
 
-    _reverseOCHL(candles);
+        _reverseOCHL(candles);
+
+    } else { // Juste last candle
+        candles[Bitfinex::candleOCHL::OPEN].push_back(dataList[Bitfinex::candleOCHL::OPEN].GetDouble());
+        candles[Bitfinex::candleOCHL::CLOSE].push_back(dataList[Bitfinex::candleOCHL::CLOSE].GetDouble());
+        candles[Bitfinex::candleOCHL::HIGH].push_back(dataList[Bitfinex::candleOCHL::HIGH].GetDouble());
+        candles[Bitfinex::candleOCHL::LOW].push_back(dataList[Bitfinex::candleOCHL::LOW].GetDouble());
+    }
+}
+
+void Util::formatReturnOrder(string &stringData, Order &order) const
+{
+    const char *json = stringData.c_str();
+    Document document;
+    document.Parse(json);
+    const Value &dataList = document;
+
+    if (dataList.Capacity() >= 1 && dataList[0].IsString() && dataList[0].GetString() == _returnError) { // Erreur
+        order.setStatus(dataList[0].GetString());
+        order.setCode(dataList[1].IsNull() ? 0 : dataList[1].GetInt());
+        order.setMessage(dataList[2].GetString());
+    } else if (dataList.Capacity() >= 6 && dataList[6].IsString() && dataList[6].GetString() == _returnSuccess) { // Order passé sur btx
+        order.setStatus(dataList[6].GetString());
+        order.setDate(getCurrentDate());
+        const Value &datas = dataList[4];
+        const Value &data = datas[0].IsArray() ? datas[0] : datas; // Submit retourn un [[]]
+        order.setBtxId(to_string(data[0].GetInt64()));
+        //order.setAmount(data[6].IsDouble() ? data[6].GetDouble() : data[6].GetInt64());
+        //order.setPrice(data[16].IsDouble() ? data[16].GetDouble() : data[16].GetInt64());
+    } else if (dataList.Capacity() >= 1 && dataList[0].IsArray()) {
+        const Value &data = dataList[0];
+        order.setStatus(data[13].GetString());
+    }
 }
 
 void Util::getConfigFile(string &config) const
@@ -91,5 +128,19 @@ void Util::_reverseOCHL(vector<vector<double>> &candles) const
 {
     for(auto &candleOCHL : candles) {
         reverse(candleOCHL.begin(), candleOCHL.end());
+        candleOCHL.pop_back();
     }
+}
+
+string Util::getCurrentDate() const
+{
+    time_t rawtime;
+    tm *timeinfo;
+    char buffer[80];
+
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+
+    strftime(buffer, 80, "%Y-%m-%d %H-%M-%S", timeinfo);
+    return buffer;
 }
