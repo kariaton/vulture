@@ -18,10 +18,12 @@ class Util
         void getBTXParam(const char *, std::string &, std::string &) const;
         void getDbParam(const char *, std::string &, std::string &, std::string &, std::string &) const;
 
-        // format return
+        // Format return
         void formatCandles(std::string &, std::vector<std::vector<double>> &) const;
         void formatReturnOrder(std::string &, Order &) const;
 
+        // Autre
+        std::string getCurrentDate() const;
    private:
         void _clearOCHL(std::vector<std::vector<double>> &) const;
         void _reverseOCHL(std::vector<std::vector<double>> &) const;

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <ta_libc.h>
+#include <algorithm> // reverse
 
 #include "Indicator.h"
 #include "Bitfinex.h"
@@ -15,6 +16,7 @@ Indicator::Indicator()
     }
 
     int stochrsiSize = Bitfinex::CANDLES_NUMBER_ELEMENT - TA_STOCHRSI_Lookback(14,14,14, TA_MAType_SMA);
+
     _outFastK = new double[stochrsiSize];
     _outFastD = new double[stochrsiSize];
 }
@@ -28,7 +30,7 @@ Indicator::~Indicator()
     _outFastD = nullptr;
 }
 
-void Indicator::stochRsi(vector<double> const &close)
+void Indicator::stochRsi(vector<double>  &close)
 {
     double const *aClose = &close[0];
     int outNbElement = 0;
@@ -54,7 +56,7 @@ void Indicator::stochF(vector<vector <double>> const &candles)
     int outNbElement = 0;
     int outBegIdx = 0;
 
-    TA_STOCHF(
+    _res = TA_STOCHF(
         0, Bitfinex::CANDLES_NUMBER_ELEMENT-1,
         aInHigh, aInLow, aInClose, // double[]
         14, 3, TA_MAType_SMA,

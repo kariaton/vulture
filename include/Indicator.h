@@ -9,7 +9,7 @@ class Indicator
         Indicator();
         virtual ~Indicator();
 
-        void stochRsi(std::vector<double> const &);
+        void stochRsi(std::vector<double>  &);
         void stochF(std::vector<std::vector <double>> const &);
         void stochRsiIsUp() const;
         bool stochRsiIsUp() {return _stochRsiIsUp;}

@@ -22,16 +22,15 @@ class Bitfinex
 
     enum candleOCHL {MTS, OPEN, CLOSE, HIGH, LOW, VOLUME}; // Enumération pour OCHL (Millisecond, Open, Close, High, Low, Volume)
 
-    std::string getName() const {return _name;}
-
     void getNonce(std::string &) const;
     void getSignature(std::string const &, std::string const &, std::string const &, std::string &) const;
     void getSig(std::string &, std::string &) const;
     void getBase64(std::string &, std::string &) const;
 
-    void submit(std::string const &, std::string const &, Order &) const;
+    void submit(Order &) const;
     void update(Order &) const;
     void cancel(Order &) const;
+    void order(Order &) const;
 
     void wallets(std::string &) const;
     void candles(std::vector<std::vector<double>> &, const bool &) const;
@@ -40,11 +39,12 @@ class Bitfinex
     int post(std::string const &, std::string const &, std::string &) const;
 
   private:
-    std::string const _name = "Bitfinex";
     std::string _apiKey;
     std::string _apiKeySecret;
-    std::string const _privateUrl = "https://api.bitfinex.com";
-    std::string const _entrypoint = "v2/auth";
+    std::string _privateUrl;
+    std::string _publicUrl;
+    std::string _version;
+    std::string _entrypoint;
 
     Util _util;
 
