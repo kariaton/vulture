@@ -8,6 +8,7 @@
 #include "Indicator.h"
 #include "Order.h"
 #include "Mysql.h"
+#include "Wallet.h"
 
 using namespace std;
 
@@ -22,8 +23,17 @@ int main()
 
     // Generate datas
     vector <vector<double>> candles = {{0}, {0}, {0}, {0}, {0}, {0}};
+
     // Bdd
     Mysql mysql;
+
+    // Wallet
+    Wallet wallet;
+    mysql.getWallet(wallet);
+
+    cout << wallet.getAvailableUsd() << endl;
+    cout << wallet.getHoldCoin() << endl;
+    cout << wallet.getHoldUsd() << endl;
 
     for(;;) {
         try {
@@ -34,8 +44,8 @@ int main()
             indicator.stochF(candles);
 
             /** ACHAT **/
-            if (!cycleOpen) {
-            //if (indicator.stochRsiIsUp() && indicator.stochFIsUp() && !cycleOpen && order.getBtxId() == "") {
+            //if (!cycleOpen) {
+            if (indicator.stochRsiIsUp() && indicator.stochFIsUp() && !cycleOpen && order.getBtxId() == "") {
                 cycleOpen = true;
 
                 int i = 0;

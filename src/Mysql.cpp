@@ -6,6 +6,7 @@
 #include "Mysql.h"
 #include "Util.h"
 #include "Order.h"
+#include "Wallet.h"
 
 using namespace std;
 using namespace sql;
@@ -72,4 +73,23 @@ void Mysql::newOrder(Order &order) const
         cerr << " (code erreur MySQL: " << e.getErrorCode();
         cerr << ", EtatSQL: " << e.getSQLState() << " )" << endl;
     }
+}
+
+void Mysql::getWallet(Wallet &wallet) const
+{
+    ResultSet* res;
+    res = _stmt->executeQuery("SELECT * FROM wallet");
+    try {
+        while (res->next()) {
+            wallet.setHoldCoin(res->getDouble("hold_coin"));
+            wallet.setHoldUsd(res->getDouble("hold_usd"));
+            wallet.setAvailableUsd(res->getDouble("available_usd"));
+        }
+    } catch (SQLException &e) {
+        cout << "# ERR: " << e.what();
+        cout << " (code erreur MySQL: " << e.getErrorCode();
+        cout << ", EtatSQL: " << e.getSQLState() << " )" << endl;
+    }
+
+    delete res;
 }
