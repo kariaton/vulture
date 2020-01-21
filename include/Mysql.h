@@ -8,6 +8,7 @@
 
 #include "Util.h"
 #include "Order.h"
+#include "Wallet.h"
 
 class Mysql
 {
@@ -16,7 +17,8 @@ class Mysql
         virtual ~Mysql();
 
         void test() const;
-        void newOrder(Order &order) const;
+        void newOrder(Order &) const;
+        void getWallet(Wallet &) const;
 
     private:
         Util _util = Util();
