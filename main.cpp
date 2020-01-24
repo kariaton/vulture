@@ -31,10 +31,6 @@ int main()
     Wallet wallet;
     mysql.getWallet(wallet);
 
-    cout << wallet.getAvailableUsd() << endl;
-    cout << wallet.getHoldCoin() << endl;
-    cout << wallet.getHoldUsd() << endl;
-
     for(;;) {
         try {
             bitfinex.candles(candles, Bitfinex::ASK_ALL_CANDLES);
@@ -44,7 +40,6 @@ int main()
             indicator.stochF(candles);
 
             /** ACHAT **/
-            //if (!cycleOpen) {
             if (indicator.stochRsiIsUp() && indicator.stochFIsUp() && !cycleOpen && order.getBtxId() == "") {
                 cycleOpen = true;
 
@@ -52,12 +47,10 @@ int main()
                 do {
                     bitfinex.candles(candles, Bitfinex::ASK_LAST_CANDLES);
                     double lastClose = candles[Bitfinex::candleOCHL::CLOSE][0];
-                    lastClose = 1.1; // delete
 
                     order.setBtxPrice(lastClose);
                     order.setPrice(lastClose + 0.1); // Achat lastClose +0.1
-                    // TODO gestion du amount
-                    order.setAmount(1.1);
+                    order.setAmount(wallet.getAvailableUsd() / order.getPrice());
 
                     if (order.getBtxId() == "") {
                         bitfinex.submit(order);
