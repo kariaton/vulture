@@ -11,6 +11,7 @@
 #include <sstream>
 #include <string>
 #include <map>
+#include <memory>
 
 #include "Bitfinex.h"
 #include "Util.h"
@@ -68,10 +69,10 @@ void Bitfinex::candles(vector<vector<double>> &candles, const bool &last) const
 /**
 * Envoie un order d'achat ou de vente
 */
-void Bitfinex::submit(Order &order) const
+void Bitfinex::submit(unique_ptr<Order> &order) const
 {
     string endpoint = "w/order/submit";
-    string body = "{\"type\":\"EXCHANGE LIMIT\",\"symbol\":\"tBTCUSD\",\"price\":\""+to_string(order.getPrice())+"\",\"amount\":\""+to_string(order.getAmount())+"\"}";
+    string body = "{\"type\":\"EXCHANGE LIMIT\",\"symbol\":\"tBTCUSD\",\"price\":\""+to_string(order->getPrice())+"\",\"amount\":\""+to_string(order->getAmount())+"\"}";
     string response = "";
     post(endpoint, body, response);
     cout << response << endl;
@@ -81,10 +82,10 @@ void Bitfinex::submit(Order &order) const
 /**
 * Update un order
 */
-void Bitfinex::update(Order &order) const
+void Bitfinex::update(unique_ptr<Order> &order) const
 {
     string endpoint = "w/order/update";
-    string body = "{\"id\":"+order.getBtxId()+",\"price\":\""+to_string(order.getPrice())+"\",\"amount\":\""+to_string(order.getAmount())+"\"}";
+    string body = "{\"id\":"+order->getBtxId()+",\"price\":\""+to_string(order->getPrice())+"\",\"amount\":\""+to_string(order->getAmount())+"\"}";
     string response = "";
     post(endpoint, body, response);
 
@@ -94,20 +95,20 @@ void Bitfinex::update(Order &order) const
 /**
 * Cancel un order
 */
-void Bitfinex::cancel(Order &order) const
+void Bitfinex::cancel(unique_ptr<Order> &order) const
 {
     string endpoint = "w/order/cancel";
-    string body = "{\"id\":"+order.getBtxId()+"}";
+    string body = "{\"id\":"+order->getBtxId()+"}";
     string response = "";
     post(endpoint, body, response);
 
     _util.formatReturnOrder(response, order);
 }
 
-void Bitfinex::order(Order &order) const
+void Bitfinex::order(unique_ptr<Order> &order) const
 {
     string endpoint = "r/orders";
-    string body = "{\"id\":["+order.getBtxId()+"]}";
+    string body = "{\"id\":["+order->getBtxId()+"]}";
     string response = "";
     post(endpoint, body, response);
 

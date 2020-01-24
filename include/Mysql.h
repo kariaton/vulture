@@ -5,6 +5,7 @@
 #include <cppconn/exception.h>
 #include <cppconn/resultset.h>
 #include <cppconn/statement.h>
+#include <memory>
 
 #include "Util.h"
 #include "Order.h"
@@ -17,7 +18,7 @@ class Mysql
         virtual ~Mysql();
 
         void test() const;
-        void newOrder(Order &) const;
+        void newOrder(std::unique_ptr<Order> &) const;
         void getWallet(Wallet &) const;
 
     private:

@@ -78,7 +78,7 @@ void Util::formatCandles(string &stringData, vector<vector<double>> &candles) co
     }
 }
 
-void Util::formatReturnOrder(string &stringData, Order &order) const
+void Util::formatReturnOrder(string &stringData, unique_ptr<Order> &order) const
 {
     const char *json = stringData.c_str();
     Document document;
@@ -86,20 +86,18 @@ void Util::formatReturnOrder(string &stringData, Order &order) const
     const Value &dataList = document;
 
     if (dataList.Capacity() >= 1 && dataList[0].IsString() && dataList[0].GetString() == _returnError) { // Erreur
-        order.setStatus(dataList[0].GetString());
-        order.setCode(dataList[1].IsNull() ? 0 : dataList[1].GetInt());
-        order.setMessage(dataList[2].GetString());
+        order->setStatus(dataList[0].GetString());
+        order->setCode(dataList[1].IsNull() ? 0 : dataList[1].GetInt());
+        order->setMessage(dataList[2].GetString());
     } else if (dataList.Capacity() >= 6 && dataList[6].IsString() && dataList[6].GetString() == _returnSuccess) { // Order passé sur btx
-        order.setStatus(dataList[6].GetString());
-        order.setDate(getCurrentDate());
+        order->setStatus(dataList[6].GetString());
+        order->setDate(getCurrentDate());
         const Value &datas = dataList[4];
         const Value &data = datas[0].IsArray() ? datas[0] : datas; // Submit retourn un [[]]
-        order.setBtxId(to_string(data[0].GetInt64()));
-        //order.setAmount(data[6].IsDouble() ? data[6].GetDouble() : data[6].GetInt64());
-        //order.setPrice(data[16].IsDouble() ? data[16].GetDouble() : data[16].GetInt64());
+        order->setBtxId(to_string(data[0].GetInt64()));
     } else if (dataList.Capacity() >= 1 && dataList[0].IsArray()) {
         const Value &data = dataList[0];
-        order.setStatus(data[13].GetString());
+        order->setStatus(data[13].GetString());
     }
 }
 

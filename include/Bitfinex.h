@@ -3,6 +3,8 @@
 
 #include <string>
 #include <map>
+#include <memory>
+
 #include <Util.h>
 #include <Order.h>
 
@@ -27,10 +29,10 @@ class Bitfinex
     void getSig(std::string &, std::string &) const;
     void getBase64(std::string &, std::string &) const;
 
-    void submit(Order &) const;
-    void update(Order &) const;
-    void cancel(Order &) const;
-    void order(Order &) const;
+    void submit(std::unique_ptr<Order> &) const;
+    void update(std::unique_ptr<Order> &) const;
+    void cancel(std::unique_ptr<Order> &) const;
+    void order(std::unique_ptr<Order> &) const;
 
     void wallets(std::string &) const;
     void candles(std::vector<std::vector<double>> &, const bool &) const;
