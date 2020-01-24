@@ -4,6 +4,7 @@
 #include <rapidjson/document.h>
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "Order.h"
 
@@ -20,7 +21,7 @@ class Util
 
         // Format return
         void formatCandles(std::string &, std::vector<std::vector<double>> &) const;
-        void formatReturnOrder(std::string &, Order &) const;
+        void formatReturnOrder(std::string &, std::unique_ptr<Order> &) const;
 
         // Autre
         std::string getCurrentDate() const;

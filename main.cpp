@@ -17,7 +17,7 @@ int main()
     // Trading
     Indicator indicator;
     Bitfinex bitfinex;
-    Order order;
+    unique_ptr<Order> currentOrder;
     double lastBtxClose; // Dernière trad sur la platforme
     bool cycleOpen = false;
 
@@ -40,36 +40,39 @@ int main()
             indicator.stochF(candles);
 
             /** ACHAT **/
-            if (indicator.stochRsiIsUp() && indicator.stochFIsUp() && !cycleOpen && order.getBtxId() == "") {
+            if (indicator.stochRsiIsUp() && indicator.stochFIsUp() && !cycleOpen && !currentOrder) {
                 cycleOpen = true;
+                unique_ptr<Order> order(new Order());
+                currentOrder = move(order);
 
                 int i = 0;
                 do {
                     bitfinex.candles(candles, Bitfinex::ASK_LAST_CANDLES);
                     double lastClose = candles[Bitfinex::candleOCHL::CLOSE][0];
 
-                    order.setBtxPrice(lastClose);
-                    order.setPrice(lastClose + 0.1); // Achat lastClose +0.1
-                    order.setAmount(wallet.getAvailableUsd() / order.getPrice());
+                    currentOrder->setBtxPrice(lastClose);
+                    currentOrder->setPrice(lastClose + 0.1); // Achat lastClose +0.1
+                    currentOrder->setAmount(wallet.getAvailableUsd() / currentOrder->getPrice());
 
-                    if (order.getBtxId() == "") {
-                        bitfinex.submit(order);
+                    if (currentOrder->getBtxId() == "") {
+                        bitfinex.submit(currentOrder);
                     } else {
                         // Update lastClose +0.1
-                        bitfinex.update(order);
+                        bitfinex.update(currentOrder);
                     }
                     usleep(1000000);
                     i++;
-                } while(order.getStatus() != "EXECUTED" && i < 4);
+                } while(currentOrder->getStatus() != "EXECUTED" && i < 4);
 
                 // si au bout de 4 tentatives l'order n'a pas été acheté, on cancel
-                if (order.getStatus() != "EXECUTED") {
-                    bitfinex.cancel(order);
-                    order.setStatus("CANCEL");
+                if (currentOrder->getStatus() != "EXECUTED") {
+                    bitfinex.cancel(currentOrder);
+                    currentOrder->setStatus("CANCEL");
                 }
 
                 // Enregistrement bdd;
-                mysql.newOrder(order);
+                mysql.newOrder(currentOrder);
+                order = move(currentOrder);
 
             /** VENTE **/
             } else if(!indicator.stochRsiIsUp() || !indicator.stochFIsUp()) {

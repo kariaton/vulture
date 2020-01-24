@@ -2,6 +2,7 @@
 #include <cppconn/exception.h>
 #include <cppconn/resultset.h>
 #include <cppconn/statement.h>
+#include <memory>
 
 #include "Mysql.h"
 #include "Util.h"
@@ -56,14 +57,14 @@ void Mysql::test() const
     delete res;
 }
 
-void Mysql::newOrder(Order &order) const
+void Mysql::newOrder(unique_ptr<Order> &order) const
 {
-    string btxId = order.getBtxId();
-    string amount = to_string(order.getAmount());
-    string price = to_string(order.getPrice());
-    string status = order.getStatus();
-    string date = order.getDate();
-    string btxPrice = to_string(order.getBtxPrice());
+    string btxId = order->getBtxId();
+    string amount = to_string(order->getAmount());
+    string price = to_string(order->getPrice());
+    string status = order->getStatus();
+    string date = order->getDate();
+    string btxPrice = to_string(order->getBtxPrice());
 
     try {
         string req = "INSERT INTO orders (btx_id, amount, price, btx_price, type, status, date) VALUES ('"+btxId+"', "+amount+", "+price+", "+btxPrice+", 'created', '"+status+"', '"+date+"')";
