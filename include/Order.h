@@ -22,6 +22,9 @@ class Order
         double getPrice() {return _price;};
         void setPrice(double price) {_price = price;};
 
+        double getSalePrice() {return _salePrice;};
+        void setSalePrice(double salePrice) {_salePrice = salePrice;};
+
         double getBtxPrice() {return _btxPrice;};
         void setBtxPrice(double btxPrice) {_btxPrice = btxPrice;};
 
@@ -37,6 +40,9 @@ class Order
         std::string getMessage() {return _message;};
         void setMessage(std::string message) {_message = message;};
 
+        std::string getIdPurchase() {return _idPurchase;};
+        void setIdPurchase(std::string idPurchase) {_idPurchase = idPurchase;};
+
     protected:
 
     private:
@@ -44,11 +50,13 @@ class Order
         std::string _date;
         std::string _type;
         double _price;
+        double _salePrice;
         double _btxPrice;
         double _amount;
         int _code;
         std::string _status;
         std::string _message;
+        std::string _idPurchase;
 };
 
 #endif // ORDER_H

@@ -22,6 +22,7 @@ class Util
         // Format return
         void formatCandles(std::string &, std::vector<std::vector<double>> &) const;
         void formatReturnOrder(std::string &, std::unique_ptr<Order> &) const;
+        void formatReturnWallet(std::string &, std::string const &, double &) const;
 
         // Autre
         std::string getCurrentDate() const;
