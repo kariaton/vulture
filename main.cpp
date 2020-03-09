@@ -17,66 +17,111 @@ int main()
     // Trading
     Indicator indicator;
     Bitfinex bitfinex;
-    unique_ptr<Order> currentOrder;
+    unique_ptr<Order> order;
     double lastBtxClose; // Dernière trad sur la platforme
-    bool cycleOpen = false;
+    bool cycleIsOpen = true;
+    bool bbandBottomTouched = false;
 
     // Generate datas
     vector <vector<double>> candles = {{0}, {0}, {0}, {0}, {0}, {0}};
 
     // Bdd
-    Mysql mysql;
+    //Mysql mysql;
 
     // Wallet
-    Wallet wallet;
-    mysql.getWallet(wallet);
+    //Wallet wallet;
+    //mysql.getWallet(wallet);
 
     for(;;) {
         try {
             bitfinex.candles(candles, Bitfinex::ASK_ALL_CANDLES);
 
-            /**INDICATEUR**/
-            indicator.stochRsi(candles[Bitfinex::candleOCHL::CLOSE]);
+//            /**INDICATEUR**/
+            indicator.macd(candles[Bitfinex::candleOCHL::CLOSE]);
             indicator.stochF(candles);
+            indicator.bband(candles[Bitfinex::candleOCHL::CLOSE]);
 
-            /** ACHAT **/
-            if (indicator.stochRsiIsUp() && indicator.stochFIsUp() && !cycleOpen && !currentOrder) {
-                cycleOpen = true;
-                unique_ptr<Order> order(new Order());
-                currentOrder = move(order);
+//            bitfinex.wallets();
+//
+            // On attand que le close touche la bband du bas
+            if (indicator.bbandBottomIsTouched(candles[Bitfinex::candleOCHL::CLOSE]) && !order && !bbandBottomTouched) {
+                cout << "touché" << endl;
+                bbandBottomTouched = true;
+            }
 
+            // Si la bband à été touchée mais est remontée au dessus de la bb il faut acheter.
+            if (bbandBottomTouched && !order && !indicator.bbandBottomIsTouched(candles[Bitfinex::candleOCHL::CLOSE])) {
+
+                bbandBottomTouched = false;
+                unique_ptr<Order> newOrder(new Order());
+                double walletUsd = 0;
+                bitfinex.wallets("USD", walletUsd);
                 int i = 0;
                 do {
                     bitfinex.candles(candles, Bitfinex::ASK_LAST_CANDLES);
                     double lastClose = candles[Bitfinex::candleOCHL::CLOSE][0];
+                    double price = lastClose + 0.1;
 
-                    currentOrder->setBtxPrice(lastClose);
-                    currentOrder->setPrice(lastClose + 0.1); // Achat lastClose +0.1
-                    currentOrder->setAmount(wallet.getAvailableUsd() / currentOrder->getPrice());
+                    newOrder->setBtxPrice(lastClose);
+                    newOrder->setPrice(price);
+                    newOrder->setAmount((walletUsd * 0.2) / price); // on achéte pour 20% du wallet usd
 
-                    if (currentOrder->getBtxId() == "") {
-                        bitfinex.submit(currentOrder);
+                    if (newOrder->getBtxId() == "") {
+                        bitfinex.submit(newOrder);
                     } else {
                         // Update lastClose +0.1
-                        bitfinex.update(currentOrder);
+                        bitfinex.update(newOrder);
                     }
+
                     usleep(1000000);
                     i++;
-                } while(currentOrder->getStatus() != "EXECUTED" && i < 4);
+               } while(newOrder->getStatus() != "EXECUTED" && i < 4);
 
                 // si au bout de 4 tentatives l'order n'a pas été acheté, on cancel
-                if (currentOrder->getStatus() != "EXECUTED") {
-                    bitfinex.cancel(currentOrder);
-                    currentOrder->setStatus("CANCEL");
+                if (newOrder->getStatus() != "EXECUTED") {
+                    bitfinex.cancel(newOrder);
+                    newOrder->setStatus("CANCEL");
+                } else {
+                    order = move(newOrder);
                 }
+            }
 
-                // Enregistrement bdd;
-                mysql.newOrder(currentOrder);
-                order = move(currentOrder);
+            // Si la bband du haut est touchée et qu'il y'a un order on vend
+            if (indicator.bbandUpperIsTouched(candles[Bitfinex::candleOCHL::CLOSE]) && order) {
+                bitfinex.candles(candles, Bitfinex::ASK_LAST_CANDLES);
+                double lastClose = candles[Bitfinex::candleOCHL::CLOSE][0];
+                double minPrice = order->getPrice() + (order->getPrice() * 0.10); // le price + 10%
 
-            /** VENTE **/
-            } else if(!indicator.stochRsiIsUp() || !indicator.stochFIsUp()) {
+                if (lastClose >= minPrice) {
+                    unique_ptr<Order> newOrder(new Order());
 
+                    int i = 0;
+                    do {
+                        bitfinex.candles(candles, Bitfinex::ASK_LAST_CANDLES);
+                        double lastClose = candles[Bitfinex::candleOCHL::CLOSE][0];
+
+                        newOrder->setBtxPrice(lastClose);
+                        newOrder->setPrice(lastClose - 0.1); // Vente lastClose - 0.1
+                        newOrder->setAmount(order->getAmount() * -1); // Montant négatif pour un ordre de vente
+
+                        if (order->getBtxId() == "") {
+                            bitfinex.submit(order);
+                        } else {
+                            // Update lastClose  - 0.1
+                            bitfinex.update(order);
+                        }
+                        usleep(1000000);
+                        i++;
+                    } while(order->getStatus() != "EXECUTED" && i < 4);
+
+                    // L'ordre n'est pas passé on le supprime sur btx
+                    if (newOrder->getStatus() != "EXECUTED") {
+                        bitfinex.cancel(newOrder);
+                        newOrder->setStatus("CANCEL");
+                    } else {
+                        order.reset();
+                    }
+                }
             }
         } catch (string const &e) {
             cerr << e << endl;

@@ -93,11 +93,27 @@ void Util::formatReturnOrder(string &stringData, unique_ptr<Order> &order) const
         order->setStatus(dataList[6].GetString());
         order->setDate(getCurrentDate());
         const Value &datas = dataList[4];
-        const Value &data = datas[0].IsArray() ? datas[0] : datas; // Submit retourn un [[]]
+        const Value &data = datas[0].IsArray() ? datas[0] : datas; // Submit retourne un [[]]
         order->setBtxId(to_string(data[0].GetInt64()));
     } else if (dataList.Capacity() >= 1 && dataList[0].IsArray()) {
         const Value &data = dataList[0];
         order->setStatus(data[13].GetString());
+    }
+}
+
+void Util::formatReturnWallet(string &stringData, string const &currency, double &balance) const
+{
+    const char *json = stringData.c_str();
+    Document document;
+    document.Parse(json);
+    const Value &dataList = document;
+
+    for (size_t i = 0; i < dataList.Size(); ++i) {
+        const Value &data = dataList[i];
+
+        if (data[1].GetString() == currency) {
+            balance = data[2].GetDouble();
+        }
     }
 }
 

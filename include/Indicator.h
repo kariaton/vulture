@@ -9,18 +9,21 @@ class Indicator
         Indicator();
         virtual ~Indicator();
 
+        void bband(std::vector<double> const &);
+        void macd(std::vector<double> const &);
         void stochRsi(std::vector<double>  &);
         void stochF(std::vector<std::vector <double>> const &);
-        void stochRsiIsUp() const;
+        bool bbandBottomIsTouched(std::vector<double> const &);
+        bool bbandUpperIsTouched(std::vector<double> const &);
         bool stochRsiIsUp() {return _stochRsiIsUp;}
         bool stochFIsUp() {return _stochFIsUp;}
 
     private:
         TA_RetCode _res;
-        double *_outFastK;
-        double *_outFastD;
         bool _stochRsiIsUp;
         bool _stochFIsUp;
+        double _bbandBottom;
+        double _bbandUpper;
 };
 
 #endif // INDICATOR_H

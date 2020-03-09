@@ -34,7 +34,7 @@ class Bitfinex
     void cancel(std::unique_ptr<Order> &) const;
     void order(std::unique_ptr<Order> &) const;
 
-    void wallets(std::string &) const;
+    void wallets(std::string const &, double &) const;
     void candles(std::vector<std::vector<double>> &, const bool &) const;
 
     int get(std::string const &, std::string const &, std::string &) const;

@@ -115,12 +115,15 @@ void Bitfinex::order(unique_ptr<Order> &order) const
     _util.formatReturnOrder(response, order);
 }
 
-void Bitfinex::wallets(string &response) const
+void Bitfinex::wallets(string const &currency, double &balance) const
 {
     string endpoint = "r/wallets";
     string body = "{}";
+    string response = "";
 
     post(endpoint, body, response);
+
+    _util.formatReturnWallet(response, currency, balance);
 }
 
 int Bitfinex::get(string const &enpoint, string const &param, string &response) const
