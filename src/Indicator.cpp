@@ -41,7 +41,7 @@ void Indicator::stochRsi(vector<double>  &close)
         outFastK, outFastD
     );
 
-    cout << "StochRSI outFastK : " << outFastK[outNbElement-2] << " outFasD : " << outFastD[outNbElement-2] << endl;
+    //cout << "StochRSI outFastK : " << outFastK[outNbElement-2] << " outFasD : " << outFastD[outNbElement-2] << endl;
     _stochRsiIsUp = outFastK > outFastD;
 
     delete outFastK;
@@ -70,7 +70,7 @@ void Indicator::macd(vector<double> const &close)
         outMacd, outMacdSignal, outMacdHist
     );
 
-    cout << "macd : " << outMacd[outNbElement-2] << " signal : " << outMacdSignal[outNbElement-2] << " hist : " << outMacdHist[outNbElement-2] << endl;
+    //cout << "macd : " << outMacd[outNbElement-2] << " signal : " << outMacdSignal[outNbElement-2] << " hist : " << outMacdHist[outNbElement-2] << endl;
 
     delete outMacd;
     delete outMacdSignal;
@@ -99,7 +99,7 @@ void Indicator::stochF(vector<vector <double>> const &candles)
         outFastK, outFastD // double[]
     );
 
-    cout << "StochF outFastK : " << outFastK[outNbElement-2] << " outFasD : " << outFastD[outNbElement-2] << endl;
+    //cout << "StochF outFastK : " << outFastK[outNbElement-2] << " outFasD : " << outFastD[outNbElement-2] << endl;
 
     _stochFIsUp = outFastK > outFastD;
 
@@ -128,7 +128,7 @@ void Indicator::bband(vector<double> const &close)
         upper, sma, lower
     );
 
-    cout << "sma : " << sma[outNbElement-2] << " upper : " << upper[outNbElement-2] << " lower : " << lower[outNbElement-2] << endl;
+    //cout << "sma : " << sma[outNbElement-2] << " upper : " << upper[outNbElement-2] << " lower : " << lower[outNbElement-2] << endl;
 
     _bbandBottom = lower[outNbElement-2];
     _bbandUpper = upper[outNbElement-2];

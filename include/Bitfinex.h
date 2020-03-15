@@ -31,6 +31,7 @@ class Bitfinex
 
     void submit(std::unique_ptr<Order> &) const;
     void update(std::unique_ptr<Order> &) const;
+    void status(std::unique_ptr<Order> &) const;
     void cancel(std::unique_ptr<Order> &) const;
     void order(std::unique_ptr<Order> &) const;
 

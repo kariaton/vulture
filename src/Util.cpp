@@ -101,6 +101,21 @@ void Util::formatReturnOrder(string &stringData, unique_ptr<Order> &order) const
     }
 }
 
+void Util::formatReturnStatus(string &stringData, unique_ptr<Order> &order) const
+{
+    const char *json = stringData.c_str();
+    Document document;
+    document.Parse(json);
+    const Value &dataList = document;
+
+    if (!dataList.Empty() && dataList[0].IsArray()) {
+        const Value &data = dataList[0];
+        order->setStatus(data[13].GetString());
+    } else {
+        order->setStatus("");
+    }
+}
+
 void Util::formatReturnWallet(string &stringData, string const &currency, double &balance) const
 {
     const char *json = stringData.c_str();

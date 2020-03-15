@@ -57,9 +57,9 @@ void Bitfinex::candles(vector<vector<double>> &candles, const bool &last) const
     string param;
 
     if (last) {
-         param = "trade:15m:tBTCUSD/last?limit=" + sNbCandles;
+         param = "trade:1m:tBTCUSD/last?limit=" + sNbCandles;
     } else {
-        param = "trade:15m:tBTCUSD/hist?limit=" + sNbCandles;
+        param = "trade:1m:tBTCUSD/hist?limit=" + sNbCandles;
     }
 
     get(endpoint, param, response);
@@ -77,6 +77,32 @@ void Bitfinex::submit(unique_ptr<Order> &order) const
     post(endpoint, body, response);
     cout << response << endl;
     _util.formatReturnOrder(response, order);
+}
+
+void Bitfinex::status(unique_ptr<Order> &order) const
+{
+    string endpoint = "r/orders";
+    string body = "{\"id\":["+order->getBtxId()+"]}";
+    string response = "";
+    post(endpoint, body, response);
+
+    _util.formatReturnStatus(response, order);
+
+    if (order->getStatus() == "") {
+        endpoint = "r/orders/tBTCUSD/hist";
+        body = "{\"id\":["+order->getBtxId()+"]}";
+        response = "";
+        post(endpoint, body, response);
+
+        _util.formatReturnStatus(response, order);
+
+        if (order->getStatus() != "") {
+            order->setStatus("EXECUTED");
+        }
+
+    }
+
+    cout << "status : " << order->getStatus() << endl;
 }
 
 /**

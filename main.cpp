@@ -14,12 +14,12 @@ using namespace std;
 
 int main()
 {
+    cout << "INIT VULTURE" << endl;
+
     // Trading
     Indicator indicator;
     Bitfinex bitfinex;
     unique_ptr<Order> order;
-    double lastBtxClose; // Dernière trad sur la platforme
-    bool cycleIsOpen = true;
     bool bbandBottomTouched = false;
 
     // Generate datas
@@ -32,26 +32,29 @@ int main()
     //Wallet wallet;
     //mysql.getWallet(wallet);
 
+//    bitfinex.candles(candles, Bitfinex::ASK_ALL_CANDLES);
+//    unique_ptr<Order> newOrder(new Order());
+//    newOrder->setBtxId("41679248615");
+//
+//    bitfinex.status(newOrder);
+//    cout << newOrder->getStatus() << endl;
+
     for(;;) {
         try {
             bitfinex.candles(candles, Bitfinex::ASK_ALL_CANDLES);
 
-//            /**INDICATEUR**/
-            indicator.macd(candles[Bitfinex::candleOCHL::CLOSE]);
-            indicator.stochF(candles);
+            /**INDICATEUR**/
             indicator.bband(candles[Bitfinex::candleOCHL::CLOSE]);
 
-//            bitfinex.wallets();
-//
-            // On attand que le close touche la bband du bas
+            // On attand que le close touche la bband du
             if (indicator.bbandBottomIsTouched(candles[Bitfinex::candleOCHL::CLOSE]) && !order && !bbandBottomTouched) {
-                cout << "touché" << endl;
                 bbandBottomTouched = true;
+                cout << "bande du bas touchée" << endl;
             }
 
             // Si la bband à été touchée mais est remontée au dessus de la bb il faut acheter.
             if (bbandBottomTouched && !order && !indicator.bbandBottomIsTouched(candles[Bitfinex::candleOCHL::CLOSE])) {
-
+                cout << "DEBUT ACHAT" << endl;
                 bbandBottomTouched = false;
                 unique_ptr<Order> newOrder(new Order());
                 double walletUsd = 0;
@@ -68,10 +71,14 @@ int main()
 
                     if (newOrder->getBtxId() == "") {
                         bitfinex.submit(newOrder);
-                    } else {
+                    } else if (newOrder->getStatus() == "ACTIVE") {
                         // Update lastClose +0.1
                         bitfinex.update(newOrder);
                     }
+
+                    bitfinex.status(newOrder);
+                    cout << " Tentative lastClose : " << lastClose << " price " << newOrder->getPrice() << endl << " statut " << newOrder->getStatus() << endl;
+
 
                     usleep(1000000);
                     i++;
@@ -81,18 +88,22 @@ int main()
                 if (newOrder->getStatus() != "EXECUTED") {
                     bitfinex.cancel(newOrder);
                     newOrder->setStatus("CANCEL");
+                    cout << "statut CANCEL" << endl;
                 } else {
                     order = move(newOrder);
+                    cout << "statut EXECUTED" << endl;
                 }
+                cout << "FIN ACHAT" << endl;
             }
 
             // Si la bband du haut est touchée et qu'il y'a un order on vend
             if (indicator.bbandUpperIsTouched(candles[Bitfinex::candleOCHL::CLOSE]) && order) {
+                cout << "Bande du haut touchée" << endl;
                 bitfinex.candles(candles, Bitfinex::ASK_LAST_CANDLES);
                 double lastClose = candles[Bitfinex::candleOCHL::CLOSE][0];
-                double minPrice = order->getPrice() + (order->getPrice() * 0.10); // le price + 10%
 
-                if (lastClose >= minPrice) {
+                if (lastClose > order->getPrice()) {
+                    cout << "DEBUT VENTE" << endl;
                     unique_ptr<Order> newOrder(new Order());
 
                     int i = 0;
@@ -104,12 +115,16 @@ int main()
                         newOrder->setPrice(lastClose - 0.1); // Vente lastClose - 0.1
                         newOrder->setAmount(order->getAmount() * -1); // Montant négatif pour un ordre de vente
 
-                        if (order->getBtxId() == "") {
+                        if (newOrder->getBtxId() == "") {
                             bitfinex.submit(order);
-                        } else {
+                        } else if(newOrder->getStatus() == "ACTIVE") {
                             // Update lastClose  - 0.1
                             bitfinex.update(order);
                         }
+
+                        bitfinex.status(newOrder);
+                        cout << " Tentative lastClose : " << lastClose << " price " << newOrder->getPrice() << endl << " statut " << newOrder->getStatus() << endl;
+
                         usleep(1000000);
                         i++;
                     } while(order->getStatus() != "EXECUTED" && i < 4);
@@ -118,16 +133,19 @@ int main()
                     if (newOrder->getStatus() != "EXECUTED") {
                         bitfinex.cancel(newOrder);
                         newOrder->setStatus("CANCEL");
+                        cout << "statut CANCEL" << endl;
                     } else {
                         order.reset();
+                        cout << "statut EXECUTED" << endl;
                     }
+
+                    cout << "FIN VENTE" << endl;
                 }
             }
         } catch (string const &e) {
             cerr << e << endl;
         }
 
-        cout << "---------" << endl;
         usleep(2000000);
     }
 
