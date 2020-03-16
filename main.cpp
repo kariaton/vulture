@@ -49,7 +49,6 @@ int main()
             // On attand que le close touche la bband du
             if (indicator.bbandBottomIsTouched(candles[Bitfinex::candleOCHL::CLOSE]) && !order && !bbandBottomTouched) {
                 bbandBottomTouched = true;
-                cout << "bande du bas touchée" << endl;
             }
 
             // Si la bband à été touchée mais est remontée au dessus de la bb il faut acheter.
@@ -98,7 +97,6 @@ int main()
 
             // Si la bband du haut est touchée et qu'il y'a un order on vend
             if (indicator.bbandUpperIsTouched(candles[Bitfinex::candleOCHL::CLOSE]) && order) {
-                cout << "Bande du haut touchée" << endl;
                 bitfinex.candles(candles, Bitfinex::ASK_LAST_CANDLES);
                 double lastClose = candles[Bitfinex::candleOCHL::CLOSE][0];
 
@@ -116,10 +114,10 @@ int main()
                         newOrder->setAmount(order->getAmount() * -1); // Montant négatif pour un ordre de vente
 
                         if (newOrder->getBtxId() == "") {
-                            bitfinex.submit(order);
+                            bitfinex.submit(newOrder);
                         } else if(newOrder->getStatus() == "ACTIVE") {
                             // Update lastClose  - 0.1
-                            bitfinex.update(order);
+                            bitfinex.update(newOrder);
                         }
 
                         bitfinex.status(newOrder);
@@ -127,7 +125,7 @@ int main()
 
                         usleep(1000000);
                         i++;
-                    } while(order->getStatus() != "EXECUTED" && i < 4);
+                    } while(newOrder->getStatus() != "EXECUTED" && i < 4);
 
                     // L'ordre n'est pas passé on le supprime sur btx
                     if (newOrder->getStatus() != "EXECUTED") {

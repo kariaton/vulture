@@ -189,8 +189,6 @@ int Bitfinex::post(string  const &endpoint, string const &body, string &response
     string nonce = "", signature = "", sig = "";
     string url = _privateUrl + "/"+ _version + "/" + _entrypoint + "/" + endpoint;
 
-    cout << url << endl;
-
     getNonce(nonce);
     getSignature(nonce, body, endpoint, signature);
     getSig(signature, sig);
