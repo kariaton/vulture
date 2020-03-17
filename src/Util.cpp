@@ -118,6 +118,7 @@ void Util::formatReturnStatus(string &stringData, unique_ptr<Order> &order) cons
 
 void Util::formatReturnWallet(string &stringData, string const &currency, double &balance) const
 {
+    cout << stringData << endl;
     const char *json = stringData.c_str();
     Document document;
     document.Parse(json);
