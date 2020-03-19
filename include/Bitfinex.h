@@ -31,8 +31,11 @@ class Bitfinex
 
     void submit(std::unique_ptr<Order> &) const;
     void update(std::unique_ptr<Order> &) const;
+    void status(std::unique_ptr<Order> &) const;
     void cancel(std::unique_ptr<Order> &) const;
     void order(std::unique_ptr<Order> &) const;
+    void sale(std::unique_ptr<Order> &, std::vector<std::vector<double>> &);
+    void buy(std::unique_ptr<Order> &, std::vector<std::vector<double>> &);
 
     void wallets(std::string const &, double &) const;
     void candles(std::vector<std::vector<double>> &, const bool &) const;

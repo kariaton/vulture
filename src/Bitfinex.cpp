@@ -12,9 +12,11 @@
 #include <string>
 #include <map>
 #include <memory>
+#include <unistd.h>
 
 #include "Bitfinex.h"
 #include "Util.h"
+#include "Order.h"
 
 using namespace std;
 using namespace CryptoPP;
@@ -57,13 +59,37 @@ void Bitfinex::candles(vector<vector<double>> &candles, const bool &last) const
     string param;
 
     if (last) {
-         param = "trade:15m:tBTCUSD/last?limit=" + sNbCandles;
+         param = "trade:1m:tBTCUSD/last?limit=" + sNbCandles;
     } else {
-        param = "trade:15m:tBTCUSD/hist?limit=" + sNbCandles;
+        param = "trade:1m:tBTCUSD/hist?limit=" + sNbCandles;
     }
 
     get(endpoint, param, response);
     _util.formatCandles(response, candles);
+}
+
+void Bitfinex::status(unique_ptr<Order> &order) const
+{
+    string endpoint = "r/orders";
+    string body = "{\"id\":["+order->getBtxId()+"]}";
+    string response = "";
+    post(endpoint, body, response);
+
+    _util.formatReturnStatus(response, order);
+
+    if (order->getStatus() == "") {
+        endpoint = "r/orders/tBTCUSD/hist";
+        body = "{\"id\":["+order->getBtxId()+"]}";
+        response = "";
+        post(endpoint, body, response);
+
+        _util.formatReturnStatus(response, order);
+
+        if (order->getStatus() != "") {
+            order->setStatus("EXECUTED");
+        }
+
+    }
 }
 
 /**
@@ -75,7 +101,7 @@ void Bitfinex::submit(unique_ptr<Order> &order) const
     string body = "{\"type\":\"EXCHANGE LIMIT\",\"symbol\":\"tBTCUSD\",\"price\":\""+to_string(order->getPrice())+"\",\"amount\":\""+to_string(order->getAmount())+"\"}";
     string response = "";
     post(endpoint, body, response);
-    cout << response << endl;
+
     _util.formatReturnOrder(response, order);
 }
 
@@ -163,11 +189,9 @@ int Bitfinex::post(string  const &endpoint, string const &body, string &response
     string nonce = "", signature = "", sig = "";
     string url = _privateUrl + "/"+ _version + "/" + _entrypoint + "/" + endpoint;
 
-    cout << url << endl;
-
-    getNonce(nonce);
-    getSignature(nonce, body, endpoint, signature);
-    getSig(signature, sig);
+    this->getNonce(nonce);
+    this->getSignature(nonce, body, endpoint, signature);
+    this->getSig(signature, sig);
 
     struct curl_slist *curlHeader = nullptr;
     curlHeader = curl_slist_append(curlHeader, ("bfx-nonce:" + nonce).c_str());
@@ -201,6 +225,8 @@ int Bitfinex::post(string  const &endpoint, string const &body, string &response
     } else {
         cerr << "Error curl init" << endl;
     }
+
+    //cout << "Réponse : " << response << endl;
 
   return 0;
 }
@@ -265,4 +291,101 @@ size_t Bitfinex::writeCallback(void *data, size_t size, size_t nmemb, void *user
     return size * nmemb;
 };
 
+void Bitfinex::buy(unique_ptr<Order> &order, vector<vector<double>> &candles)
+{
+    cout << "DEBUT ACHAT" << endl;
+    unique_ptr<Order> newOrder(new Order());
+    double walletUsd = 0;
+    this->wallets("USD", walletUsd);
+    int i = 0;
+    do {
+        this->candles(candles, Bitfinex::ASK_LAST_CANDLES);
+        double lastClose = candles[Bitfinex::candleOCHL::CLOSE][0];
+        double price = lastClose + 0.1;
 
+        newOrder->setBtxPrice(lastClose);
+        newOrder->setPrice(price);
+        newOrder->setAmount((walletUsd * 0.2) / price); // on achéte pour 20% du wallet usd
+
+        if (newOrder->getBtxId() == "") {
+            cout << "Action : submit" << endl;
+            this->submit(newOrder);
+        } else if (newOrder->getStatus() == "ACTIVE") {
+            // Update lastClose +0.1
+            cout << "Action : update" << endl;
+            this->update(newOrder);
+        }
+
+        this->status(newOrder);
+        cout << " Tentative lastClose : " << lastClose << " prix : " << newOrder->getPrice() << " statut : " << newOrder->getStatus() << endl;
+
+        usleep(1000000);
+        i++;
+    } while(newOrder->getStatus() != "EXECUTED" && i < 10);
+
+    // si au bout de 4 tentatives l'order n'a pas été acheté, on cancel
+    if (newOrder->getStatus() != "EXECUTED") {
+        this->cancel(newOrder);
+        newOrder->setStatus("CANCEL");
+        cout << "CANCEL" << endl;
+    } else {
+        order = move(newOrder);
+        cout << "EXECUTED" << endl;
+    }
+
+    cout << "FIN ACHAT" << endl;
+}
+
+
+void Bitfinex::sale(unique_ptr<Order> &order, vector<vector<double>> &candles)
+{
+    cout << "DEBUT VENTE" << endl;
+    unique_ptr<Order> newOrder(new Order());
+    double walletBtc = 0;
+    wallets("BTC", walletBtc);
+
+    int i = 0;
+    do {
+        this->candles(candles, Bitfinex::ASK_LAST_CANDLES);
+
+        double lastClose = candles[Bitfinex::candleOCHL::CLOSE][0];
+        double fees = walletBtc * 0.002;
+
+        newOrder->setBtxPrice(lastClose);
+        newOrder->setPrice(lastClose - 0.1); // Vente lastClose - 0.1
+        newOrder->setAmount((walletBtc - fees) * -1); // Montant négatif pour un ordre de vente
+
+        if (newOrder->getBtxId() == "") {
+            cout << " Action : submit" << endl;
+            this->submit(newOrder);
+        } else if(newOrder->getStatus() == "ACTIVE") {
+            cout << "Action : update" << endl;
+            // Update lastClose  - 0.1
+            this->update(newOrder);
+        }
+
+        if (newOrder->getStatus() != "error" || newOrder->getCode() != 10114) { // 10114 est l'erreur nonce: small
+            this->status(newOrder);
+            cout << " Tentative lastClose : " << lastClose << " prix : " << newOrder->getPrice() << " statut : " << newOrder->getStatus() << endl;
+        }
+
+
+        usleep(1000000);
+        i++;
+    } while(newOrder->getStatus() != "EXECUTED" && i < 10);
+
+    // L'ordre n'est pas passé on le supprime sur btx
+    if (newOrder->getStatus() == "error" && newOrder->getCode() != 10114) {
+        order.reset();
+        cout << "statut ERROR" << endl;
+    } else if (newOrder->getStatus() != "EXECUTED") {
+        this->cancel(newOrder);
+        newOrder->setStatus("CANCEL");
+        cout << "statut CANCEL" << endl;
+    } else {
+        order.reset();
+        cout << "statut EXECUTED" << endl;
+    }
+
+    cout << "FIN VENTE" << endl;
+}
