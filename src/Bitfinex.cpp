@@ -77,7 +77,10 @@ void Bitfinex::status(unique_ptr<Order> &order) const
 
     _util.formatReturnStatus(response, order);
 
-    if (order->getStatus() == "") {
+    // si c'est un order d'achat et qu'il est partiellement rempli on le met en executé
+    if (order->getStatus() != "" && order->getAmount() > 0 && order->getStatus().find("PARTIALLY FILLED") != string::npos) {
+        order->setStatus("EXECUTED");
+    } else if (order->getStatus() == "") {
         endpoint = "r/orders/tBTCUSD/hist";
         body = "{\"id\":["+order->getBtxId()+"]}";
         response = "";
