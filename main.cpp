@@ -13,7 +13,7 @@ using namespace std;
 int main()
 {
     cout << "INIT VULTURE" << endl;
-    cout << "v1.0.0" << endl;
+    cout << "v0.0.1" << endl;
 
     // Trading
     Indicator indicator;
