@@ -85,7 +85,10 @@ void Util::formatReturnOrder(string &stringData, unique_ptr<Order> &order) const
     document.Parse(json);
     const Value &dataList = document;
 
-    if (dataList.Capacity() >= 1 && dataList[0].IsString() && dataList[0].GetString() == _returnError) { // Erreur
+    if (stringData == "") {
+        order->setStatus("WARNING");
+        order->setMessage("string data vide");
+    }else if (dataList.Capacity() >= 1 && dataList[0].IsString() && dataList[0].GetString() == _returnError) { // Erreur
         order->setStatus(dataList[0].GetString());
         order->setCode(dataList[1].IsNull() ? 0 : dataList[1].GetInt());
         order->setMessage(dataList[2].GetString());

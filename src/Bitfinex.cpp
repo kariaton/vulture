@@ -68,19 +68,6 @@ void Bitfinex::candles(vector<vector<double>> &candles, const bool &last) const
     _util.formatCandles(response, candles);
 }
 
-/**
-* Envoie un order d'achat ou de vente
-*/
-void Bitfinex::submit(unique_ptr<Order> &order) const
-{
-    string endpoint = "w/order/submit";
-    string body = "{\"type\":\"EXCHANGE LIMIT\",\"symbol\":\"tBTCUSD\",\"price\":\""+to_string(order->getPrice())+"\",\"amount\":\""+to_string(order->getAmount())+"\"}";
-    string response = "";
-    post(endpoint, body, response);
-
-    _util.formatReturnOrder(response, order);
-}
-
 void Bitfinex::status(unique_ptr<Order> &order) const
 {
     string endpoint = "r/orders";
@@ -103,6 +90,19 @@ void Bitfinex::status(unique_ptr<Order> &order) const
         }
 
     }
+}
+
+/**
+* Envoie un order d'achat ou de vente
+*/
+void Bitfinex::submit(unique_ptr<Order> &order) const
+{
+    string endpoint = "w/order/submit";
+    string body = "{\"type\":\"EXCHANGE LIMIT\",\"symbol\":\"tBTCUSD\",\"price\":\""+to_string(order->getPrice())+"\",\"amount\":\""+to_string(order->getAmount())+"\"}";
+    string response = "";
+    post(endpoint, body, response);
+
+    _util.formatReturnOrder(response, order);
 }
 
 /**
@@ -189,9 +189,9 @@ int Bitfinex::post(string  const &endpoint, string const &body, string &response
     string nonce = "", signature = "", sig = "";
     string url = _privateUrl + "/"+ _version + "/" + _entrypoint + "/" + endpoint;
 
-    getNonce(nonce);
-    getSignature(nonce, body, endpoint, signature);
-    getSig(signature, sig);
+    this->getNonce(nonce);
+    this->getSignature(nonce, body, endpoint, signature);
+    this->getSig(signature, sig);
 
     struct curl_slist *curlHeader = nullptr;
     curlHeader = curl_slist_append(curlHeader, ("bfx-nonce:" + nonce).c_str());
@@ -225,6 +225,8 @@ int Bitfinex::post(string  const &endpoint, string const &body, string &response
     } else {
         cerr << "Error curl init" << endl;
     }
+
+    //cout << "Réponse : " << response << endl;
 
   return 0;
 }
@@ -315,7 +317,7 @@ void Bitfinex::buy(unique_ptr<Order> &order, vector<vector<double>> &candles)
         }
 
         this->status(newOrder);
-        cout << " Tentative lastClose : " << lastClose << " prix : " << newOrder->getPrice() << endl << " statut : " << newOrder->getStatus() << endl;
+        cout << " Tentative lastClose : " << lastClose << " prix : " << newOrder->getPrice() << " statut : " << newOrder->getStatus() << endl;
 
         usleep(1000000);
         i++;
@@ -347,10 +349,11 @@ void Bitfinex::sale(unique_ptr<Order> &order, vector<vector<double>> &candles)
         this->candles(candles, Bitfinex::ASK_LAST_CANDLES);
 
         double lastClose = candles[Bitfinex::candleOCHL::CLOSE][0];
+        double fees = walletBtc * 0.002;
 
         newOrder->setBtxPrice(lastClose);
         newOrder->setPrice(lastClose - 0.1); // Vente lastClose - 0.1
-        newOrder->setAmount(walletBtc * -1); // Montant négatif pour un ordre de vente
+        newOrder->setAmount((walletBtc - fees) * -1); // Montant négatif pour un ordre de vente
 
         if (newOrder->getBtxId() == "") {
             cout << " Action : submit" << endl;
