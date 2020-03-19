@@ -7,14 +7,13 @@
 #include "ta_libc.h"
 #include "Indicator.h"
 #include "Order.h"
-#include "Mysql.h"
-#include "Wallet.h"
 
 using namespace std;
 
 int main()
 {
     cout << "INIT VULTURE" << endl;
+    cout << "v1.0.0" << endl;
 
     // Trading
     Indicator indicator;
@@ -24,15 +23,6 @@ int main()
 
     // Generate datas
     vector <vector<double>> candles = {{0}, {0}, {0}, {0}, {0}, {0}};
-
-    // Bdd
-    //Mysql mysql;
-
-    // Wallet
-    //Wallet wallet;
-    //mysql.getWallet(wallet);
-
-    //bitfinex.candles(candles, Bitfinex::ASK_ALL_CANDLES);
 
     for(;;) {
         try {
