@@ -358,37 +358,45 @@ void Bitfinex::sale(unique_ptr<Order> &order, vector<vector<double>> &candles)
         newOrder->setPrice(lastClose - 0.1); // Vente lastClose - 0.1
         newOrder->setAmount((walletBtc - fees) * -1); // Montant négatif pour un ordre de vente
 
+        // Il est possible que l'order soit passé sur btx entre temps, ce qui fait que les coins ont été liquidé.
+        if (walletBtc <= newOrder->getAmount()) {
+            newOrder->setStatus("error");
+            newOrder->setMessage("Coin insuffisant vérifier sur la plateforme");
+            break;
+        }
+
         if (newOrder->getBtxId() == "") {
-            cout << " Action : submit" << endl;
+            cout << " Action: submit" << endl;
             this->submit(newOrder);
         } else if(newOrder->getStatus() == "ACTIVE") {
-            cout << "Action : update" << endl;
+            cout << "Action: update" << endl;
             // Update lastClose  - 0.1
             this->update(newOrder);
         }
 
         if (newOrder->getStatus() != "error" || newOrder->getCode() != 10114) { // 10114 est l'erreur nonce: small
             this->status(newOrder);
-            cout << " Tentative lastClose : " << lastClose << " prix : " << newOrder->getPrice() << " statut : " << newOrder->getStatus() << endl;
+            cout << " Tentative lastClose: " << lastClose << " prix: " << newOrder->getPrice() << " statut: " << newOrder->getStatus() << endl;
         }
-
 
         usleep(1000000);
         i++;
     } while(newOrder->getStatus() != "EXECUTED" && i < 10);
 
-    // L'ordre n'est pas passé on le supprime sur btx
+
     if (newOrder->getStatus() == "error" && newOrder->getCode() != 10114) {
         order.reset();
-        cout << "statut ERROR" << endl;
-    } else if (newOrder->getStatus() != "EXECUTED") {
+        cout << "statut: ERROR" << endl;
+    } else if (newOrder->getStatus() != "EXECUTED") { // L'ordre n'est pas passé on le supprime sur btx
         this->cancel(newOrder);
         newOrder->setStatus("CANCEL");
-        cout << "statut CANCEL" << endl;
-    } else {
+        cout << "statut: CANCEL" << endl;
+    } else { // Order passé sur btx
         order.reset();
-        cout << "statut EXECUTED" << endl;
+        cout << "statut: EXECUTED" << endl;
     }
 
+
+    cout << "message: " << newOrder->getMessage() << endl;
     cout << "FIN VENTE" << endl;
 }
